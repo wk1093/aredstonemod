@@ -1,0 +1,152 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "OR": [
+          { "north": "connected" },
+          { "east": "connected" },
+          { "south": "connected" },
+          { "west": "connected" },
+          { "up": "connected" },
+          { "down": "connected" },
+          { "north": "none" },
+          { "east": "none" },
+          { "south": "none" },
+          { "west": "none" },
+          { "up": "none" },
+          { "down": "none" }
+        ]
+      },
+      "apply": {
+        "model": "aredstonemod:block/cable/node"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+            { "north": "powered" },
+            { "east": "powered" },
+            { "south": "powered" },
+            { "west": "powered" },
+            { "up": "powered" },
+            { "down": "powered" }
+        ]
+      },
+        "apply": {
+            "model": "aredstonemod:block/cablepower/node"
+        }
+    },
+    {
+      "when": {
+        "north": "connected"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cable/connector",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "east": "connected"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cable/connector",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "connected"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cable/connector",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "connected"
+      },
+      "apply": {
+          "model": "aredstonemod:block/cable/connector",
+          "x": 270,
+          "y": 270
+      }
+    },
+    {
+      "when": {
+        "up": "connected"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cable/connector",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "down": "connected"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cable/connector"
+      }
+    },
+    {
+      "when": {
+        "north": "powered"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cablepower/connector",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "east": "powered"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cablepower/connector",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "powered"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cablepower/connector",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "powered"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cablepower/connector",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "up": "powered"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cablepower/connector",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "down": "powered"
+      },
+      "apply": {
+        "model": "aredstonemod:block/cablepower/connector"
+      }
+    }
+  ]
+}

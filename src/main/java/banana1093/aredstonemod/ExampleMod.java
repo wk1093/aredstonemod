@@ -29,8 +29,8 @@ public class ExampleMod implements ModInitializer {
 		// ########################### ITEMS & BLOCKS ###########################
 		Item hand = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "hand"), new Hand(new FabricItemSettings().maxCount(1)));
 
-		Block cable1b_block = Registry.register(Registries.BLOCK, new Identifier("aredstonemod", "cable1bit"), new Cable1Bit(FabricBlockSettings.of(Material.METAL).breakInstantly().nonOpaque()));
-		Registry.register(Registries.ITEM, new Identifier("aredstonemod", "cable1bit"), new BlockItem(cable1b_block, new FabricItemSettings()));
+		Block cable1b_block = Registry.register(Registries.BLOCK, new Identifier("aredstonemod", "cable"), new Cable(FabricBlockSettings.of(Material.METAL).breakInstantly().nonOpaque()));
+		Registry.register(Registries.ITEM, new Identifier("aredstonemod", "cable"), new BlockItem(cable1b_block, new FabricItemSettings()));
 
 
 		// ########################### CREATIVE MENUS ###########################
