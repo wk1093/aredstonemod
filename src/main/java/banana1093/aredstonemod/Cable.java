@@ -1,16 +1,26 @@
 package banana1093.aredstonemod;
 
 import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.DyeItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Hand;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.function.BooleanBiFunction;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
@@ -18,6 +28,9 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 // Similar to redstone wire, but is instant and has no signal loss, it can go upwards, downwards, and sideways
 // it uses an internal signal strength that goes up instead of down (like redstone dust)
@@ -36,7 +49,12 @@ import net.minecraft.world.World;
 // 2 = less powered (powered by 1)
 // 3 = less powered (powered by 2)
 // ...
-public class Cable extends Block {
+public class Cable extends Block implements BlockEntityProvider {
+    @Nullable
+    @Override
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new CableBlockEntity(pos, state);
+    }
 
     public enum CableSide implements StringIdentifiable { // mostly for visual purposes, but also helps with powering
         NONE("none"),
@@ -55,37 +73,6 @@ public class Cable extends Block {
         }
     }
 
-    // tint color for cable
-    public enum CableColor implements StringIdentifiable {
-        WHITE("white"),
-        ORANGE("orange"),
-        MAGENTA("magenta"),
-        LIGHT_BLUE("light_blue"),
-        YELLOW("yellow"),
-        LIME("lime"),
-        PINK("pink"),
-        GRAY("gray"),
-        LIGHT_GRAY("light_gray"),
-        CYAN("cyan"),
-        PURPLE("purple"),
-        BLUE("blue"),
-        BROWN("brown"),
-        GREEN("green"),
-        RED("red"),
-        BLACK("black");
-
-        private final String name;
-
-        CableColor(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String asString() {
-            return name;
-        }
-    }
-
 
 
     public static final EnumProperty<CableSide> UP;
@@ -95,10 +82,6 @@ public class Cable extends Block {
     public static final EnumProperty<CableSide> EAST;
     public static final EnumProperty<CableSide> WEST;
 
-    public static final EnumProperty<CableColor> COLOR;
-
-    public static final IntProperty POWER;
-
     private static final VoxelShape NODE;
     private static final VoxelShape C_UP;
     private static final VoxelShape C_DOWN;
@@ -106,8 +89,6 @@ public class Cable extends Block {
     private static final VoxelShape C_WEST;
     private static final VoxelShape C_NORTH;
     private static final VoxelShape C_SOUTH;
-
-    private static final int MAX_POWER = 100;
 
     static {
         UP = EnumProperty.of("up", CableSide.class);
@@ -117,8 +98,6 @@ public class Cable extends Block {
         EAST = EnumProperty.of("east", CableSide.class);
         WEST = EnumProperty.of("west", CableSide.class);
 
-        COLOR = EnumProperty.of("color", CableColor.class); // default is white
-
         NODE = Block.createCuboidShape(4.5, 4.5, 4.5, 11.5, 11.5, 11.5);
         C_DOWN = Block.createCuboidShape(4.5, 0, 4.5, 11.5, 5, 11.5);
         C_UP = Block.createCuboidShape(4.5, 11, 4.5, 11.5, 16, 11.5);
@@ -126,15 +105,13 @@ public class Cable extends Block {
         C_WEST = Block.createCuboidShape(0, 4.5, 4.5, 5, 11.5, 11.5);
         C_NORTH = Block.createCuboidShape(4.5, 4.5, 0, 11.5, 11.5, 5);
         C_SOUTH = Block.createCuboidShape(4.5, 4.5, 11, 11.5, 11.5, 16);
-
-        POWER = IntProperty.of("power", 0, MAX_POWER);
     }
 
     public Cable(Settings settings) {
         super(settings);
         setDefaultState(getDefaultState().with(UP, CableSide.NONE).with(DOWN, CableSide.NONE)
                 .with(NORTH, CableSide.NONE).with(SOUTH, CableSide.NONE).with(EAST, CableSide.NONE)
-                .with(WEST, CableSide.NONE).with(COLOR, CableColor.WHITE).with(POWER, 0));
+                .with(WEST, CableSide.NONE));
     }
 
     public static EnumProperty<CableSide> getProperty(Direction facing) {
@@ -169,7 +146,7 @@ public class Cable extends Block {
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(UP, DOWN, NORTH, SOUTH, EAST, WEST, COLOR, POWER);
+        builder.add(UP, DOWN, NORTH, SOUTH, EAST, WEST);
     }
 
     static boolean isPowerable(BlockState state) {
@@ -181,24 +158,27 @@ public class Cable extends Block {
 
     }
 
-    private BlockState updateCable(BlockState state, World world, BlockPos pos) {
+    public BlockState updateCable(BlockState state, World world, BlockPos pos) {
         boolean shouldBePowered = false;
+        CableBlockEntity thisEntity = (CableBlockEntity)world.getBlockEntity(pos);
+        assert thisEntity != null;
         for (Direction direction : Direction.values()) {
             BlockPos offset = pos.offset(direction);
             BlockState offsetState = world.getBlockState(offset);
-            if (offsetState.getBlock() instanceof Cable
-                    // && offsetState.get(COLOR) == state.get(COLOR)
-            ) {
+            if (offsetState.getBlock() instanceof Cable && ((CableBlockEntity)Objects.requireNonNull(world.getBlockEntity(offset))).color == thisEntity.color) {
+                CableBlockEntity offEntity = (CableBlockEntity)world.getBlockEntity(offset);
+                assert offEntity != null;
                 state = state.with(getProperty(direction), CableSide.CONNECTED);
-                if (offsetState.get(POWER) > 0) { // if neighbour is powered
-                    if (offsetState.get(POWER) < state.get(POWER) || state.get(POWER) == 0) { // if cable has better power than this one
-                        if (offsetState.get(POWER)+1 < MAX_POWER) {
-                            state = state.with(POWER, offsetState.get(POWER) + 1); // power this cable
+                if (offEntity.power > 0) { // if neighbour is powered
+                    if (offEntity.power < thisEntity.power || thisEntity.power == 0) { // if cable has better power than this one
+                        if (offEntity.power+1 < CableBlockEntity.MAX_POWER) {
+                            //state = state.with(POWER, offEntity.power + 1); // power this cable
+                            thisEntity.power = offEntity.power+1;
                             shouldBePowered = true;
                         }
                     }
                 }
-            } else if (offsetState.emitsRedstonePower() | isPowerable(offsetState)) {
+            } else if ((offsetState.emitsRedstonePower() | isPowerable(offsetState)) && !(offsetState.getBlock() instanceof Cable)) {
                 state = state.with(getProperty(direction), CableSide.CONNECTED);
                 if (offsetState.getBlock() instanceof AbstractRedstoneGateBlock && offsetState.get(Properties.HORIZONTAL_FACING) != direction.getOpposite() && offsetState.get(Properties.HORIZONTAL_FACING) != direction) {
                     state = state.with(getProperty(direction), CableSide.NONE);
@@ -206,7 +186,7 @@ public class Cable extends Block {
                 if (offsetState.getBlock() instanceof AbstractRedstoneGateBlock) {
                     int power = offsetState.getStrongRedstonePower(world, offset, direction);
                     if (power > 0) {
-                        state = state.with(POWER, 1);
+                        thisEntity.power = 1;
                         shouldBePowered = true;
                     }
                 }
@@ -215,11 +195,11 @@ public class Cable extends Block {
             }
         }
         if (!shouldBePowered) {
-            state = state.with(POWER, 0);
+            thisEntity.power = 0;
         }
 
         for (Direction direction : Direction.values()) {
-            if (state.get(getProperty(direction)) == CableSide.CONNECTED && state.get(POWER) > 0) {
+            if (state.get(getProperty(direction)) == CableSide.CONNECTED && thisEntity.power > 0) {
                 state = state.with(getProperty(direction), CableSide.POWERED);
             }
         }
@@ -256,9 +236,6 @@ public class Cable extends Block {
     }
 
 
-
-
-
     @Override
     public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.MODEL;
@@ -281,12 +258,45 @@ public class Cable extends Block {
 
     @Override
     public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) { // for powering other redstone components
-        return state.get(POWER) > 0 ? 15 : 0;
+        CableBlockEntity thisEntity = (CableBlockEntity)world.getBlockEntity(pos);
+        assert thisEntity != null;
+        return thisEntity.power > 0 ? 15 : 0;
     }
 
     @Override
     public int getStrongRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) { // for powering other redstone components
         return 0;
+    }
+
+    @Override
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (player.getStackInHand(hand).getItem() == ExampleMod.CABLE_BLOCK_ITEM) {
+            // use hit.side to get the side of the block that was clicked and set the cable to that side
+            CableBlockEntity thisEntity = (CableBlockEntity)world.getBlockEntity(pos);
+            assert thisEntity != null;
+            world.setBlockState(pos.offset(hit.getSide()), ExampleMod.CABLE_BLOCK.getDefaultState());
+            CableBlockEntity newEntity = (CableBlockEntity)world.getBlockEntity(pos.offset(hit.getSide()));
+            assert newEntity != null;
+            newEntity.color = thisEntity.color;
+            world.updateNeighborsAlways(pos, this);
+            return ActionResult.SUCCESS;
+        } else if (player.getStackInHand(hand).getItem() instanceof DyeItem) {
+            CableBlockEntity thisEntity = (CableBlockEntity)world.getBlockEntity(pos);
+            assert thisEntity != null;
+            thisEntity.color = CableColor.dye(((DyeItem)player.getStackInHand(hand).getItem()).getColor());
+            world.updateNeighborsAlways(pos, this);
+            return ActionResult.SUCCESS;
+        }
+        return ActionResult.PASS;
+    }
+
+    @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        // remove block entity
+        world.removeBlockEntity(pos);
+
+        super.onBreak(world, pos, state, player);
+
     }
 
 
