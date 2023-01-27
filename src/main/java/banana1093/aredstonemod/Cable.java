@@ -154,7 +154,7 @@ public class Cable extends Block implements BlockEntityProvider {
         // buttons and pressure plates are not included because they are not powerable, they are just sources
         return state.getBlock() instanceof RedstoneWireBlock || state.getBlock() instanceof RedstoneLampBlock ||
                state.getBlock() instanceof AbstractRedstoneGateBlock || state.getBlock() instanceof ButtonBlock ||
-               state.getBlock() instanceof PistonBlock;
+               state.getBlock() instanceof PistonBlock || state.getBlock() instanceof FastLamp;
 
     }
 
@@ -162,12 +162,17 @@ public class Cable extends Block implements BlockEntityProvider {
         boolean shouldBePowered = false;
         CableBlockEntity thisEntity = (CableBlockEntity)world.getBlockEntity(pos);
         assert thisEntity != null;
+        int cableNeighbours = 0;
+        CableColor lastNeighbourColor = null;
+        // if cableNeighbours == 1 then set current color to lastNeighbourColor
         for (Direction direction : Direction.values()) {
             BlockPos offset = pos.offset(direction);
             BlockState offsetState = world.getBlockState(offset);
             if (offsetState.getBlock() instanceof Cable && ((CableBlockEntity)Objects.requireNonNull(world.getBlockEntity(offset))).color == thisEntity.color) {
                 CableBlockEntity offEntity = (CableBlockEntity)world.getBlockEntity(offset);
                 assert offEntity != null;
+                cableNeighbours++;
+                lastNeighbourColor = offEntity.color;
                 state = state.with(getProperty(direction), CableSide.CONNECTED);
                 if (offEntity.power > 0) { // if neighbour is powered
                     if (offEntity.power < thisEntity.power || thisEntity.power == 0) { // if cable has better power than this one
@@ -197,7 +202,9 @@ public class Cable extends Block implements BlockEntityProvider {
         if (!shouldBePowered) {
             thisEntity.power = 0;
         }
-
+        if (cableNeighbours == 1) {
+            thisEntity.color = lastNeighbourColor;
+        }
         for (Direction direction : Direction.values()) {
             if (state.get(getProperty(direction)) == CableSide.CONNECTED && thisEntity.power > 0) {
                 state = state.with(getProperty(direction), CableSide.POWERED);

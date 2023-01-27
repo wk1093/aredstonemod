@@ -10,11 +10,13 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.Material;
+import net.minecraft.block.RedstoneLampBlock;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ public class ExampleMod implements ModInitializer {
 
 	// ##### BLOCKS #####
 	public static Block CABLE_BLOCK;
+	public static Block FAST_LAMP_BLOCK;
 
 	// ##### BLOCK ENTITIES #####
 	public static BlockEntityType<CableBlockEntity> CABLE_BLOCK_ENTITY;
@@ -31,6 +34,7 @@ public class ExampleMod implements ModInitializer {
 	// ##### ITEMS #####
 	public static Item HAND_ITEM;
 	public static Item CABLE_BLOCK_ITEM;
+	public static Item FAST_LAMP_ITEM;
 
 	@Override
 	public void onInitialize() {
@@ -39,6 +43,7 @@ public class ExampleMod implements ModInitializer {
 
 		// ##### BLOCKS #####
 		CABLE_BLOCK = Registry.register(Registries.BLOCK, new Identifier("aredstonemod", "cable"), new Cable(FabricBlockSettings.of(Material.METAL).breakInstantly().nonOpaque()));
+		FAST_LAMP_BLOCK = Registry.register(Registries.BLOCK, new Identifier("aredstonemod", "fast_lamp"), new FastLamp(FabricBlockSettings.of(Material.REDSTONE_LAMP).strength(0.3F).sounds(BlockSoundGroup.GLASS)));
 
 		// ##### BLOCK ENTITIES #####
 		CABLE_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, new Identifier("aredstonemod", "cable_entity"), FabricBlockEntityTypeBuilder.create(CableBlockEntity::new, CABLE_BLOCK).build());
@@ -47,6 +52,7 @@ public class ExampleMod implements ModInitializer {
 
 		HAND_ITEM = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "hand"), new Hand(new FabricItemSettings().maxCount(1)));
 		CABLE_BLOCK_ITEM = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "cable"), new BlockItem(CABLE_BLOCK, new FabricItemSettings()));
+		FAST_LAMP_ITEM = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "fast_lamp"), new BlockItem(FAST_LAMP_BLOCK, new FabricItemSettings()));
 
 		// ########################### CREATIVE MENUS ###########################
 		ItemStack handStack = new ItemStack(HAND_ITEM);

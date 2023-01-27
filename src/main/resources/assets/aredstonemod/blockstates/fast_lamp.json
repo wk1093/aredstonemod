@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": {"model":  "aredstonemod:block/fast_lamp"},
+    "lit=true": {"model":  "aredstonemod:block/fast_lamp_on"}
+  }
+}
