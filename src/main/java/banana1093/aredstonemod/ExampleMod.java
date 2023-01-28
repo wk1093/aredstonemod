@@ -27,6 +27,7 @@ public class ExampleMod implements ModInitializer {
 	// ##### BLOCKS #####
 	public static Block CABLE_BLOCK;
 	public static Block FAST_LAMP_BLOCK;
+	public static Block MEMORY_GATE_BLOCK;
 
 	// ##### BLOCK ENTITIES #####
 	public static BlockEntityType<CableBlockEntity> CABLE_BLOCK_ENTITY;
@@ -35,6 +36,7 @@ public class ExampleMod implements ModInitializer {
 	public static Item HAND_ITEM;
 	public static Item CABLE_BLOCK_ITEM;
 	public static Item FAST_LAMP_ITEM;
+	public static Item MEMORY_GATE_ITEM;
 
 	@Override
 	public void onInitialize() {
@@ -44,6 +46,7 @@ public class ExampleMod implements ModInitializer {
 		// ##### BLOCKS #####
 		CABLE_BLOCK = Registry.register(Registries.BLOCK, new Identifier("aredstonemod", "cable"), new Cable(FabricBlockSettings.of(Material.METAL).breakInstantly().nonOpaque()));
 		FAST_LAMP_BLOCK = Registry.register(Registries.BLOCK, new Identifier("aredstonemod", "fast_lamp"), new FastLamp(FabricBlockSettings.of(Material.REDSTONE_LAMP).strength(0.3F).sounds(BlockSoundGroup.GLASS)));
+		MEMORY_GATE_BLOCK = Registry.register(Registries.BLOCK, new Identifier("aredstonemod", "memory_gate"), new MemoryGate(FabricBlockSettings.of(Material.METAL).breakInstantly().nonOpaque()));
 
 		// ##### BLOCK ENTITIES #####
 		CABLE_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, new Identifier("aredstonemod", "cable_entity"), FabricBlockEntityTypeBuilder.create(CableBlockEntity::new, CABLE_BLOCK).build());
@@ -53,6 +56,7 @@ public class ExampleMod implements ModInitializer {
 		HAND_ITEM = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "hand"), new Hand(new FabricItemSettings().maxCount(1)));
 		CABLE_BLOCK_ITEM = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "cable"), new BlockItem(CABLE_BLOCK, new FabricItemSettings()));
 		FAST_LAMP_ITEM = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "fast_lamp"), new BlockItem(FAST_LAMP_BLOCK, new FabricItemSettings()));
+		MEMORY_GATE_ITEM = Registry.register(Registries.ITEM, new Identifier("aredstonemod", "memory_gate"), new BlockItem(MEMORY_GATE_BLOCK, new FabricItemSettings()));
 
 		// ########################### CREATIVE MENUS ###########################
 		ItemStack handStack = new ItemStack(HAND_ITEM);
@@ -73,6 +77,8 @@ public class ExampleMod implements ModInitializer {
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register((content) -> {
 			content.add(CABLE_BLOCK);
+			content.add(FAST_LAMP_BLOCK);
+			content.add(MEMORY_GATE_BLOCK);
 		});
 	}
 }
