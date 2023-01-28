@@ -1,8 +1,10 @@
 package banana1093.aredstonemod;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.render.RenderLayer;
 
 public class ExampleModClient implements ClientModInitializer {
 	@Override
@@ -15,5 +17,7 @@ public class ExampleModClient implements ClientModInitializer {
 			}
 			return 0xFFFFFF;
 		}, ExampleMod.CABLE_BLOCK);
+		BlockRenderLayerMap.INSTANCE.putBlock(ExampleMod.MEMORY_GATE_BLOCK, RenderLayer.getTranslucent());
+		System.out.println("Client initialized");
 	}
 }

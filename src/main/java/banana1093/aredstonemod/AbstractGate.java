@@ -1,7 +1,6 @@
 package banana1093.aredstonemod;
 
-import net.minecraft.block.AbstractRedstoneGateBlock;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.*;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -52,9 +51,9 @@ public abstract class AbstractGate extends AbstractRedstoneGateBlock {
         boolean b2 = (Boolean)state.get(POWERED);
         if (b1 != b2 && !world.getBlockTickScheduler().isTicking(pos, this)) {
             TickPriority tickPriority = TickPriority.HIGH;
-            if (this.isTargetNotAligned(world, pos, state)) {
+            if (this.isTargetNotAligned(world, pos, state)) { // what is this?
                 tickPriority = TickPriority.EXTREMELY_HIGH;
-            } else if (b2) {
+            } else if (b2) { // if we power on, we want to do it asap
                 tickPriority = TickPriority.VERY_HIGH;
             }
 
@@ -75,7 +74,23 @@ public abstract class AbstractGate extends AbstractRedstoneGateBlock {
     }
 
     public int get(World world, BlockPos pos, BlockState state, Direction dir) {
-        return world.getEmittedRedstonePower(pos.offset(dir), dir);
+        //return world.getEmittedRedstonePower(pos.offset(dir), dir);
+        //return world.getReceivedRedstonePower(pos.offset(dir));
+        // for some reason, the above two methods don't always work, so we use this instead:
+
+        BlockPos blockPos = pos.offset(dir);
+        int i = world.getEmittedRedstonePower(blockPos, dir);
+        if (i >= 15) {
+            return i;
+        } else {
+            BlockState blockState = world.getBlockState(blockPos);
+            return Math.max(i, blockState.isOf(Blocks.REDSTONE_WIRE) ? (Integer)blockState.get(RedstoneWireBlock.POWER) : 0);
+        }
+    }
+
+    @Override
+    protected int getUpdateDelayInternal(BlockState state) {
+        return 0;
     }
 
 }
