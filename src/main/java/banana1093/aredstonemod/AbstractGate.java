@@ -84,13 +84,17 @@ public abstract class AbstractGate extends AbstractRedstoneGateBlock {
             return i;
         } else {
             BlockState blockState = world.getBlockState(blockPos);
-            return Math.max(i, blockState.isOf(Blocks.REDSTONE_WIRE) ? (Integer)blockState.get(RedstoneWireBlock.POWER) : 0);
+            return Math.max(i, blockState.isOf(Blocks.REDSTONE_WIRE) ? (Integer) blockState.get(RedstoneWireBlock.POWER) : 0);
         }
     }
 
     @Override
     protected int getUpdateDelayInternal(BlockState state) {
         return 0;
+    }
+
+    public boolean dustConnects(BlockState state, Direction dir) {
+        return true;
     }
 
 }

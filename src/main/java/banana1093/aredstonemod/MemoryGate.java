@@ -14,6 +14,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.tick.TickPriority;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 // active high d latch
 // locations are relative to FACING

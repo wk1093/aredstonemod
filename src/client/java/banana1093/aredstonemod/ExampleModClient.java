@@ -13,11 +13,12 @@ public class ExampleModClient implements ClientModInitializer {
 			assert world != null;
 			BlockEntity blockEntity = world.getBlockEntity(pos);
 			if (blockEntity instanceof CableBlockEntity) {
+				System.out.println(((CableBlockEntity) blockEntity).getRgb());
 				return ((CableBlockEntity) blockEntity).getRgb();
 			}
 			return 0xFFFFFF;
 		}, ExampleMod.CABLE_BLOCK);
-		BlockRenderLayerMap.INSTANCE.putBlock(ExampleMod.MEMORY_GATE_BLOCK, RenderLayer.getTranslucent());
+		BlockRenderLayerMap.INSTANCE.putBlock(ExampleMod.MEMORY_GATE_BLOCK, RenderLayer.getCutout());
 		System.out.println("Client initialized");
 	}
 }

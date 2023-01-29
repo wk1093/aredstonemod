@@ -56,16 +56,7 @@ public class CableBlockEntity extends BlockEntity {
     }
 
     int getRgb() {
-        return switch (color) {
-            case RED -> 0xFF0000;
-            case GREEN -> 0x00FF00;
-            case BLUE -> 0x0000FF;
-            case YELLOW -> 0xFFFF00;
-            case CYAN -> 0x00FFFF;
-            case MAGENTA -> 0xFF00FF;
-            case BLACK -> 0x000000;
-            default -> 0xFFFFFF;
-        };
+        return color.getRgb();
     }
 
 
